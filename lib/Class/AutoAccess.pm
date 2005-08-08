@@ -9,52 +9,77 @@ Class::AutoAccess - Zero code dynamic accessors implementation.
 
 =head1 VERSION
 
-Version 0.01
+Version 0.02
 
 =cut
 
-our $VERSION = '0.01';
+our $VERSION = '0.02';
 
 =head1 DESCRIPTION
 
-This class provides an autoload method that is used as an automated accessor for
-object internal attributes.
+Base class for automated accessors implementation.
 
-Class that inherits from this have to be implement as blessed hashmaps (almost all objects).
+If you implement a class as a blessed hash reference, this class can greatly helps you not
+to write the fields accessors yourself. It uses the AUTOLOAD method to implement accessors
+on demand. Since the accessor is *REALLY* implemented the first time it is attempted to be use,
+using this class does NOT affect performance of your program.
 
-As from now, this AUTOLOAD method produces the actual accessor method the first time
-it's called. This speeds up your programm since a real accessor exists after.
+Inheriting from this class does not impose accessors. If you want to implement your own accessors for any reason
+(checking, implementation change ... ), just write them and they will be used in place of automated ones.
+
+
+Since it use the AUTOLOAD method, be carefull when you 
+implement your own AUTOLOAD method in subclasses. If you wanna keep this functionnal in this particular case,
+evaluate SUPER::AUTOLOAD in your own AUTOLOAD method before doing anything else.
+
 
 =head1 SYNOPSIS
 
-package Foo ;
-use base qw/Class::AutoAccess/ ;
+    package Foo ;
 
-sub new{
-	my ($class) = @_ ;
-	my $self = {
-		'bar' => undef ,
-		'baz' => undef 
-	};
-	return bless $self, $class ;
-}
+    # This class Foo will benefit from the AutoAccessors features of the base class Class::AutoAccess 
 
-1;
+    use base qw/Class::AutoAccess/ ;  # Just write that and that's all !
 
-package main ;
+    sub new{
+        my ($class) = @_ ;
+        my $self = {
+                'bar' => undef ,
+                'baz' => undef ,
+                'toCheck' => undef
+        };
+     return bless $self, $class ;
+    }
 
-my $o = Foo->new();
+    sub toCheck{
+        my ($self , $value ) = @_ ;
+        # Behave the way you want. This accessor will be used in place of automated ones.
+    }
 
-$o->bar();
-$o->bar("new value");
-$o->baz() ;
-...
+    1;
+
+    package main ;
+
+    my $o = Foo->new();
+    
+    # Since there is a bar attribute, the accessor will be implemented at the first use:
+    $o->bar();
+    # This time, the bar accessor is really implemented so there is no performance lost.
+    $o->bar("new value");
+
+    # Idem.
+    $o->baz() ;
+    
+    # If you wrote your own accessor, that one will be used.
+    $o->toCheck("value");
 
 =head1 AUTHOR
 
 Jerome Eteve, C<< <jerome@eteve.net> >>
 
 =head1 BUGS
+
+None known.
 
 Please report any bugs or feature requests to
 C<bug-class-autoaccess@rt.cpan.org>, or through the web interface at
