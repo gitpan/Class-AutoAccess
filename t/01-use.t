@@ -1,6 +1,6 @@
 #!perl -T
 
-use Test::More tests => 1;
+use Test::More tests => 3;
 
 BEGIN {
 	use_ok( 'Class::AutoAccess' );
@@ -24,7 +24,10 @@ package main ;
 
 my $o = Foo->new();
 
-$o->bar();
 $o->bar("new value");
 $o->baz() ;
-
+ok( $o->bar() eq 'new value') ;
+for my $i ( 1..1000 ){
+    $o->baz($i) ;
+}
+ok( $o->baz() == 1000 );

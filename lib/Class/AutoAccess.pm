@@ -1,7 +1,7 @@
 package Class::AutoAccess;
 
 use warnings;
-
+use strict ;
 
 =head1 NAME
 
@@ -9,27 +9,29 @@ Class::AutoAccess - Zero code dynamic accessors implementation.
 
 =head1 VERSION
 
-Version 0.02
+Version 0.03
 
 =cut
 
-our $VERSION = '0.02';
+our $VERSION = '0.03_01';
 
 =head1 DESCRIPTION
 
 Base class for automated accessors implementation.
 
-If you implement a class as a blessed hash reference, this class can greatly helps you not
+If you implement a class as a blessed hash reference, this class helps you not
 to write the fields accessors yourself. It uses the AUTOLOAD method to implement accessors
-on demand. Since the accessor is *REALLY* implemented the first time it is attempted to be use,
-using this class does NOT affect performance of your program.
+on demand. Since the accessor is *REALLY* implemented the first time it is attempted to be used,
+using this class does NOT affect the performance of your program.
 
 Inheriting from this class does not impose accessors. If you want to implement your own accessors for any reason
 (checking, implementation change ... ), just write them and they will be used in place of automated ones.
 
 
-Since it use the AUTOLOAD method, be carefull when you 
-implement your own AUTOLOAD method in subclasses. If you wanna keep this functionnal in this particular case,
+This class uses the AUTOLOAD method, so be careful when you 
+implement your own AUTOLOAD method in subclasses.
+
+If you want to keep this feature functionnal in this particular case,
 evaluate SUPER::AUTOLOAD in your own AUTOLOAD method before doing anything else.
 
 
@@ -37,9 +39,7 @@ evaluate SUPER::AUTOLOAD in your own AUTOLOAD method before doing anything else.
 
     package Foo ;
 
-    # This class Foo will benefit from the AutoAccessors features of the base class Class::AutoAccess 
-
-    use base qw/Class::AutoAccess/ ;  # Just write that and that's all !
+    use base qw/Class::AutoAccess/ ;  # Just write this
 
     sub new{
         my ($class) = @_ ;
@@ -91,7 +91,7 @@ your bug as I make changes.
 
 =head1 COPYRIGHT & LICENSE
 
-Copyright 2005 Jerome Eteve, all rights reserved.
+Copyright 2005-2009 Jerome Eteve, all rights reserved.
 
 This program is free software; you can redistribute it and/or modify it
 under the same terms as Perl itself.
@@ -100,7 +100,8 @@ under the same terms as Perl itself.
 
 use Carp ;
 
-no strict ;
+our $AUTOLOAD ;
+
 
 sub AUTOLOAD{
 	my ($self,$value)= @_ ;
@@ -122,26 +123,35 @@ sub AUTOLOAD{
 	# in order to avoid calling this everytime !!
 
 	my $pkg = ref($self ) ;
-	my $code = qq{
-		package $pkg ;
-		sub $attname {
-			my \$self = shift ;
-			\@_ ? \$self->{$attname} = shift :
-			\$self->{$attname} ;
-		}
+        my $methCode = sub{
+            my $obj = shift ;
+            @_ ? $obj->{$attname} = shift : $obj->{$attname} ;
+        };
+        
+        ## Install method as $pkg::$attname
+        {
+            no strict 'refs' ;
+            *{$pkg.'::'.$attname}  = $methCode ;
+        }
+        
+	# my $code = qq{
+# 		package $pkg ;
+# 		sub $attname {
+# 			my \$self = shift ;
+# 			\@_ ? \$self->{$attname} = shift :
+# 			\$self->{$attname} ;
+# 		}
 	
-	};
+# 	};
 
-	eval $code ;
-	if( $@ ){
-		confess("Failed to create method $AUTOLOAD : $@");
-	}
+# 	eval $code ;
+# 	if( $@ ){
+# 		confess("Failed to create method $AUTOLOAD : $@");
+# 	}
 	
 	# Let's use out brand new method !
 	goto &$AUTOLOAD ;
 		
 }
-
-use strict ;
 
 1; # End of Class::AutoAccess

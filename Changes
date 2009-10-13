@@ -1,5 +1,11 @@
 Revision history for Class-AutoAccess
 
+0.03_01    2009 10 13
+        Changed implementation for a cleaner one
+        Added tests
+        Improved documentation
+        Release candidate 1 for version 0.03
+
 0.02    2005 08 08
         Improved documentation.
 
