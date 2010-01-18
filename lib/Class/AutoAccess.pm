@@ -13,7 +13,7 @@ Version 0.03
 
 =cut
 
-our $VERSION = '0.03_01';
+our $VERSION = '0.03';
 
 =head1 DESCRIPTION
 
@@ -70,7 +70,7 @@ evaluate SUPER::AUTOLOAD in your own AUTOLOAD method before doing anything else.
     # Idem.
     $o->baz() ;
     
-    # If you wrote your own accessor, that one will be used.
+    # If you wrote your own accessor, it will be used (this is a Perl feature)
     $o->toCheck("value");
 
 =head1 AUTHOR
@@ -91,7 +91,7 @@ your bug as I make changes.
 
 =head1 COPYRIGHT & LICENSE
 
-Copyright 2005-2009 Jerome Eteve, all rights reserved.
+Copyright 2005-2010 Jerome Eteve, all rights reserved.
 
 This program is free software; you can redistribute it and/or modify it
 under the same terms as Perl itself.
@@ -106,7 +106,7 @@ our $AUTOLOAD ;
 sub AUTOLOAD{
 	my ($self,$value)= @_ ;
 	
-	# $AUTOLOAD contains the name of the missing method.
+	# $AUTOLOAD contains the full name of the missing method.
 
 	# Avoid implicit ovverriding of destroy method.
 	return if $AUTOLOAD =~ /::DESTROY$/ ;
@@ -120,7 +120,7 @@ sub AUTOLOAD{
 	}
 
 	# If attribute exists, got to set up the method
-	# in order to avoid calling this everytime !!
+	# in order to avoid calling this everytime
 
 	my $pkg = ref($self ) ;
         my $methCode = sub{
@@ -134,22 +134,7 @@ sub AUTOLOAD{
             *{$pkg.'::'.$attname}  = $methCode ;
         }
         
-	# my $code = qq{
-# 		package $pkg ;
-# 		sub $attname {
-# 			my \$self = shift ;
-# 			\@_ ? \$self->{$attname} = shift :
-# 			\$self->{$attname} ;
-# 		}
-	
-# 	};
-
-# 	eval $code ;
-# 	if( $@ ){
-# 		confess("Failed to create method $AUTOLOAD : $@");
-# 	}
-	
-	# Let's use out brand new method !
+        # Let's use our shiny new method
 	goto &$AUTOLOAD ;
 		
 }

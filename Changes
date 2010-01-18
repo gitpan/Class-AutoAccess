@@ -1,5 +1,10 @@
 Revision history for Class-AutoAccess
 
+0.03   2010 01 18
+       Beta passed all tests on CPAN (to date).
+       Out of beta.
+       Cleaned up old commented code.
+
 0.03_01    2009 10 13
         Changed implementation for a cleaner one
         Added tests
